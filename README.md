@@ -133,5 +133,8 @@ CAI will only analyse systems you explicitly instruct it to.
 
 <img width="986" height="670" alt="Screenshot-01" src="https://github.com/user-attachments/assets/35391a83-126d-4adb-86a3-016d1732e2ec" />
 
+<img width="986" height="670" alt="Screenshot-02" src="https://github.com/user-attachments/assets/28da45ec-7f63-413f-be73-69657be4e9ff" />
+
 
 Only scan systems you own or have written permission to test.
+
