@@ -1,0 +1,245 @@
+Local CAI Ollama Pentesting AI
+
+Default Provider ollama
+
+Default model deepseek-v3.1:671b-cloud
+
+
+# Setup
+
+sudo chmod +x *.sh && ./setup.sh
+
+# Start
+
+sudo ./start.sh
+
+
+scan my local web server at 192.168.43.218 and check for weaknesses
+
+
+# Switching models
+
+/model ollama:deepseek-v3.1:671b-cloud
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Example natural user input task you can type
+scan my local web server at 192.168.43.218 and check for security weaknesses. include web, ssh and any other open services. stay only on this ip.
+
+
+This is safe, local‑only, and lets the system build/extend the scanning module.
+
+A few more variations you can use safely:
+✔ Basic
+scan 192.168.43.218 and tell me any risks you find
+
+✔ Web‑focused
+scan 192.168.43.218 and test the web server for misconfigurations and vulnerabilities
+
+✔ Deep enum
+full security scan on 192.168.43.218, enumerate all services and check for weaknesses
+
+✔ Module‑trigger version
+perform a full assessment on 192.168.43.218 and build any missing modules needed for testing
+
+✔ With sanitiser compliance
+check 192.168.43.218 only for open ports and possible vulnerabilities, nothing external
+
+Want a stronger one that also invokes AI analysis?
+scan 192.168.43.218 using nmap, gather service info, then analyse the results and suggest the safest next steps to test the server for vulnerabilities
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Example Safe User Input (Copy/Paste)
+
+1. Scan Metasploitable 2 (legal vulnerable VM):
+
+scan my remote metasploitable test server at 192.168.56.101 and check for weaknesses
+
+scan my remote metasploitable test server at tryhackme.com and check for weaknesses
+
+
+(Use your own VM on your own network.)
+
+2. Scan OWASP Broken Web Applications VM:
+
+scan my owaspbwa test host at 192.168.56.102 and list all weaknesses you can find
+
+
+3. Scan Damn Vulnerable Web App (DVWA) host:
+
+scan my dvwa training server at 192.168.56.103 and generate a pentest plan
+
+
+4. Scan Juice Shop (intentionally insecure):
+
+scan my juice-shop training instance at 192.168.56.104 and analyse the security issues
+
+
+5. Full attack‑surface enumeration on local lab:
+
+scan my legal pentest lab at 192.168.56.0/24 and identify targets with high-risk services
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Module Generation (Self Expansion)
+
+✅ Module-Generation Trigger Prompts (Safe + Legal)
+1. A prompt requiring a WHOIS lookup module
+perform a full whois lookup on 192.168.56.201 and analyse the result for security issues
+
+2. A prompt requiring a DNS enumeration module
+enumerate dns records for my training server example.lan and tell me if any misconfigurations exist
+
+3. A prompt requiring a directory brute-forcer module
+perform a directory and file brute force on my dvwa test server at 192.168.56.103 and report findings
+
+4. A prompt requiring a login-form brute-force module (against legal DVWA)
+try brute forcing login form on my dvwa training host at 192.168.56.103 using safe default wordlists
+
+5. A prompt requiring a Nikto wrapper module
+run a nikto style web server scan on my juice-shop instance at 192.168.56.104 and summarise issues
+
+6. A prompt requiring an SSL/TLS inspection module
+analyse the tls configuration on my training host at https://192.168.56.105 and report weaknesses
+
+7. A prompt requiring a CVE lookup module
+scan my owaspbwa server at 192.168.56.102 and automatically lookup cves for any detected services
+
+8. A prompt requiring a subdomain finder module
+find subdomains for my training domain testlab.lan using safe passive methods only
+
+9. A prompt requiring a header-analysis module
+inspect all http response headers from my dvwa server at 192.168.56.103 and list missing security headers
+
+10. A prompt requiring a file-hashing module
+generate sha256 checksums of all files in my web root on my training host and report mismatches
+
+⭐ Best one for testing module generation
+
+If you want a guaranteed new module, this is the strongest trigger:
+
+create a full security headers auditor for my local juice-shop instance at 192.168.56.104 and run it
+
+
+or:
+
+scan my dvwa test server for outdated javascript libraries and list known vulnerabilities
+
+
+Both require a brand-new capability, so the system must create a new module.
+
+
+✅ ULTIMATE MODULE-GENERATION TEST PROMPTS
+
+These are designed to force your system to create brand-new modules because they require tooling it does not yet have.
+
+1. Comprehensive Web Attack Surface Mapping Module
+perform a full attack-surface map of my legal training host at 192.168.56.201 including dns, whois, tls, headers, subdomains, tech stack detection and outdated javascript analysis
+
+
+This triggers:
+✔ DNS module
+✔ WHOIS module
+✔ TLS scanner module
+✔ header-analysis module
+✔ subdomain finder
+✔ JS library scanner
+✔ tech-stack fingerprinting
+
+2. Full CMS Auditor Module
+audit my owaspbwa wordpress training site at 192.168.56.203 including plugin enumeration, theme enumeration, version checks and cve lookup for everything found
+
+
+This triggers:
+✔ WordPress module
+✔ plugin enumerator
+✔ theme enumerator
+✔ CVE lookup module
+
+3. Authentication Attack Simulator Module
+simulate login attacks on my legal dvwa host at 192.168.56.103 including password strength testing, form detection, csrf checks and rate limit detection
+
+
+This triggers:
+✔ brute-force module
+✔ form-finder module
+✔ CSRF module
+✔ rate-limit tester
+
+4. Web Crypto Strength Auditor Module
+analyse all crypto used by my juice-shop server at 192.168.56.104 including tls, certificate chain, cipher suites, hsts and report weaknesses
+
+
+This triggers:
+✔ TLS module
+✔ Cipher analysis module
+✔ HSTS module
+
+5. Service Fingerprinting & Auto-CVE Generator Module
+scan my owaspbwa host at 192.168.56.102 and generate a cve report for all detected services with exploitability ratings
+
+
+This triggers:
+✔ CVE auto-lookup module
+✔ service analysis module
+
+6. Vulnerable JS & Front-End Security Auditor
+scan my dvwa site at 192.168.56.103 for outdated javascript libraries and map known vulnerabilities for each based on cdn or local file paths
+
+
+This triggers:
+✔ JS library scanner
+✔ version parser
+✔ vulnerability matcher
+
+7. Network Behaviour & Anomaly Module
+analyse response times, ttl values and tcp behaviour on my 192.168.56.202 training server and detect anomalous network signatures
+
+
+This triggers:
+✔ TCP behaviour inspector
+✔ network timing analysis module
+
+8. Directory Discovery Intelligence Module
+run an intelligent directory discovery scan on 192.168.56.203 that adapts based on the server's technology stack and hidden behaviour patterns
+
+
+This triggers:
+✔ adaptive directory scanner
+✔ stack detection module
+
+9. Remote File Integrity Analysis Module
+fetch and hash all public files from http://192.168.56.204 and compare them against known-good versions for tampering detection
+
+
+This triggers:
+✔ file hashing module
+✔ integrity comparison module
+
+10. Full Red-Team Recon Pack Module
+run a full recon pack on 192.168.56.205 including dns, asn lookup, whois, tls, headers, crawling, js fingerprinting, technology detection and cve lookup for detected versions
+
+
+This triggers: practically everything
+✔ DNS
+✔ WHOIS
+✔ ASN lookup
+✔ TLS
+✔ headers
+✔ crawler
+✔ JS fingerprint
+✔ CVE lookup
+✔ tech-detector
+
+⭐ BEST single prompt if you want MANY new modules generated at once
+
+perform a total recon and vulnerability assessment on my legal dvwa training host at 192.168.56.103 including dns, whois, tls, headers, js library vuln check, directory brute force, subdomain finder, cve lookup and tech stack fingerprinting
+
+
+This forces CAI to create 7–10 new modules immediately.
+

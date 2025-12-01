@@ -1,0 +1,20 @@
+requests
+python-nmap
+netifaces
+colorama
+rich
+prompt_toolkit
+pyfiglet
+termcolor
+packaging
+python-dotenv
+# required for "import dns"
+dnspython
+# required for "import bs4"
+beautifulsoup4
+lxml
+# required for "import shodan"
+shodan
+# required for "import wappalyzer"
+python-Wappalyzer
+python-whois
