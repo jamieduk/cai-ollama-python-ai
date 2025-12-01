@@ -1,4 +1,5 @@
 Local CAI Ollama Pentesting AI
+https://github.com/jamieduk/cai-ollama-python-ai
 
 A natural-language Blue/Red-Team pentesting assistant powered by Python, Ollama-compatible LLMs, and auto-generated modules.
 You can speak to it like a human:

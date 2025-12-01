@@ -1,4 +1,5 @@
 Local CAI Ollama Pentesting AI
+https://github.com/jamieduk/cai-ollama-python-ai
 
 Default Provider ollama
 
