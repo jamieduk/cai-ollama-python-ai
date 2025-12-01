@@ -52,7 +52,6 @@ logging options
 Setup
 sudo chmod +x *.sh && ./setup.sh
 
-
 This:
 
 installs dependencies
@@ -74,16 +73,18 @@ cai>
 
 Switching Models
 
-
 ollama run deepseek-v3.1:671b-cloud
-
 
 You can switch models naturally:
 
 /model ollama:deepseek-v3.1:671b-cloud
 
-
 This immediately updates the active model and rewrites config.json.
+
+This program assumes you already have ollama and model
+
+curl -fsSL https://ollama.com/install.sh | sh && ollama run deepseek-v3.1:671b-cloud
+
 
 Example Usage
 scan my router
@@ -137,4 +138,5 @@ CAI will only analyse systems you explicitly instruct it to.
 
 
 Only scan systems you own or have written permission to test.
+
 
