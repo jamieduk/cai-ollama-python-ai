@@ -74,21 +74,6 @@ def ensure_modules_folder():
                 "    return 'example ability loaded'\n"
             )
 
-# (c) J~Net 2025
-# Dynamic Hot-Reload Module Loader (c) J~Net 2025
-def load_modules():
-    mods={}
-    for p in glob.glob(f"{MODULE_DIR}/*.py"):
-        name=os.path.splitext(os.path.basename(p))[0]
-        try:
-            spec=importlib.util.spec_from_file_location(name,p)
-            mod=importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            mods[name]=mod
-        except Exception as e:
-            print(f"[Module Load Error] {name}: {e}")
-    return mods
-
 
 
 
@@ -279,39 +264,89 @@ def handle_scan_target(target):
 #------------------------------------------------------------
 # NATURAL LANGUAGE → auto modules
 #------------------------------------------------------------
+
+#------------------------------------------------------------
+# MODULE SYSTEM WITH ABILITY MATCHING (c) J~Net 2025
+#------------------------------------------------------------
+
+import difflib
+
+# Load all modules with TAGS + ability()
+def load_modules():
+    mods={}
+    for p in glob.glob(f"{MODULE_DIR}/*.py"):
+        name=os.path.splitext(os.path.basename(p))[0]
+        try:
+            spec=importlib.util.spec_from_file_location(name,p)
+            mod=importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+
+            # ensure module has TAGS
+            if not hasattr(mod,"TAGS"):
+                mod.TAGS=[]
+            mods[name]=mod
+        except Exception as e:
+            print(f"[Module Load Error] {name}: {e}")
+    return mods
+
+
+# Natural‑Language Ability Selector
 def try_module(cmd):
+    # build list of all tags across all modules
+    tagged=[]
     for name,mod in modules.items():
-        if hasattr(mod,"ability"):
+        for t in mod.TAGS:
+            tagged.append((name,t))
+
+    if not tagged:
+        return None  # no modules exist
+
+    # extract best matching tag
+    all_tags=[t for (_,t) in tagged]
+    best=difflib.get_close_matches(cmd,all_tags,n=1,cutoff=0.45)
+
+    if not best:
+        return None  # no ability match found
+
+    best_tag=best[0]
+
+    # find module owning the tag
+    for name,tag in tagged:
+        if tag==best_tag:
+            mod=modules[name]
             try:
                 return mod.ability()
             except Exception as e:
                 return f"[Module Error] {name}: {e}"
+
     return None
 
 
+# AUTO‑EXTEND WITH TAGS (ability categories)
 def extend(cmd):
     prompt=(
-        "User requested: '"+cmd+"'\n"
-        "Write a FULL Python module named ability() that performs this task.\n"
-        "REQUIREMENTS:\n"
-        "- Must contain a function: ability()\n"
-        "- ability() MUST return a string (summary of actions/results).\n"
-        "- NO classes, no placeholders, no missing imports.\n"
-        "- Code must be plain Python, fully valid.\n"
-        "- Do NOT use async or external binaries unless installed.\n"
-        "- Output ONLY raw Python code, nothing else."
+        "Create a Python ability module for the task:\n"
+        f"'{cmd}'\n\n"
+
+        "RULES:\n"
+        "- Create TAGS=list of natural‑language ability keywords.\n"
+        "- TAGS MUST NOT contain IP addresses, usernames or specific hosts.\n"
+        "- TAGS describe generic ability only.\n"
+        "- Provide a function ability() returning a string summary.\n"
+        "- NO placeholders, NO missing imports.\n"
+        "- FULL Python code only.\n"
     )
 
     raw=ask_model(prompt)
-
-    # sanitise stray markdown / formatting
     code=raw.replace("```python","").replace("```","")
 
-    # enforce ability() exists
+    # ensure TAGS + ability() exist
     if "def ability" not in code:
-        code="\ndef ability():\n    return 'Error: AI failed to generate valid module.'\n"
+        code="\nTAGS=['generic']\ndef ability():\n    return 'Error: invalid module'\n"
 
-    fname="mod_"+str(abs(hash(cmd)))[:8]+".py"
+    # filename based on semantic hash, not containing target
+    h=abs(hash(cmd))%10**8
+    fname=f"mod_{h}.py"
     path=os.path.join(MODULE_DIR,fname)
 
     with open(path,"w") as f:
@@ -321,13 +356,13 @@ def extend(cmd):
     reload_modules()
 
 
-
 def reload_modules():
     global modules
     modules=load_modules()
 
+
 #------------------------------------------------------------
-# COMMAND DISPATCH
+# COMMAND DISPATCH (UPDATED) (c) J~Net 2025
 #------------------------------------------------------------
 def handle_command(cmd):
     if cmd=="":  # recall last
@@ -337,6 +372,7 @@ def handle_command(cmd):
     save_last(cmd)
     low=cmd.lower()
 
+    # scan commands handled normally
     if low=="scan my router":
         handle_scan_router()
         return
@@ -346,13 +382,16 @@ def handle_command(cmd):
         handle_scan_target(target)
         return
 
+    # FIRST: try existing abilities
     out=try_module(low)
     if out:
         print(out)
         return
 
-    print("[no ability found → generating module]")
+    # OTHERWISE: create new ability module
+    print("[no matching ability → extending skillset]")
     extend(cmd)
+
 
 #------------------------------------------------------------
 # MAIN LOOP

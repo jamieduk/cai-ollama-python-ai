@@ -1,0 +1,35 @@
+
+
+✔ How to use
+1. Run it on your test server
+
+Place it somewhere like:
+
+/var/www/html/test/Brute-Force-php/brute-test.php
+
+192.168.43.218/test/Brute-Force-php/brute-test.php
+
+2. Your CAI brute-force tool can POST to it
+
+Example test POST:
+
+http://your-ip/brute-test.php
+
+
+POST fields:
+
+username
+
+password
+
+3. Monitor the log
+brute-log.txt
+
+
+Prompt for use in CAI
+
+bruteforce username and password for this page 192.168.43.218/test/Brute-Force-php/brute-test.php
+
+
+
+

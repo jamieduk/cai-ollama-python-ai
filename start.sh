@@ -8,6 +8,8 @@ echo "To allow nmap scanning CAI will need to allow nmap without requiring sudo"
 echo "Or if you prefere, run with sudo like sudo ./start.sh"
 sudo setcap cap_net_raw,cap_net_admin+eip $(which nmap)
 
+echo ""
+
 if [ ! -d venv ];then
     python3 -m venv venv
 fi
@@ -27,5 +29,6 @@ echo "Created default config.json"
 fi
 
 echo "CAI Ollama By J~Net (c) 2025"
+echo ""
 python3 ./cai_ollama.py
 
