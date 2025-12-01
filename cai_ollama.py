@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # CAI Blue/Red Team Pentest Framework (c) J~Net 2025
 
-import os,sys,json,shlex,subprocess,socket,requests,importlib,glob
+import os,sys,json,shlex,subprocess,socket,requests,importlib,glob,difflib
 
 CONFIG_FILE="config.json"
 MODULE_DIR="modules"
@@ -18,9 +18,6 @@ DEFAULT_CONFIG={
     "mode":1
 }
 
-#------------------------------------------------------------
-# CONFIG
-#------------------------------------------------------------
 def ensure_config():
     if not os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE,'w') as f:
@@ -37,7 +34,6 @@ def load_config():
     with open(CONFIG_FILE,"w") as f:
         json.dump(data,f,indent=4)
     return data
-
 
 def save_last(cmd):
     with open(LAST_CMD_FILE,"w") as f:
@@ -62,24 +58,12 @@ def ask_model(prompt):
     except Exception as e:
         return "Ollama request failed: "+str(e)
 
-#------------------------------------------------------------
-# MODULES
-#------------------------------------------------------------
 def ensure_modules_folder():
     if not os.path.exists(MODULE_DIR):
         os.mkdir(MODULE_DIR)
         with open(os.path.join(MODULE_DIR,"example_module.py"),"w") as f:
-            f.write(
-                "def ability():\n"
-                "    return 'example ability loaded'\n"
-            )
+            f.write("TAGS=['example']\n\ndef ability():\n    return 'example ability loaded'\n")
 
-
-
-
-#------------------------------------------------------------
-# LLM
-#------------------------------------------------------------
 # (c) J~Net 2025
 def ollama_generate(prompt,model,url,timeout=60):
     payload={"model":model,"prompt":prompt,"stream":False}
@@ -91,9 +75,6 @@ def ollama_generate(prompt,model,url,timeout=60):
     except Exception as e:
         return "Ollama request failed: "+str(e)
 
-#------------------------------------------------------------
-# SCANNING
-#------------------------------------------------------------
 def detect_router_ip():
     try:
         with open('/proc/net/route') as f:
@@ -115,25 +96,33 @@ def detect_router_ip():
         return None
 
 def set_active_target(text,config):
-    # (c) J~Net 2025
     import re,json
-
-    # find all ipv4 addresses in the user text
     ips=re.findall(r"(?:\d{1,3}\.){3}\d{1,3}",text)
-
-    # if user provided a new IP, update
     if ips:
         config["active_target"]=ips[0]
         with open("config.json","w") as f:
             f.write(json.dumps(config,indent=2))
         return ips[0]
-
-    # fallback: if already set, keep it
     if "active_target" in config and config["active_target"]:
         return config["active_target"]
-
-    # last fallback: none found
     return None
+
+# (c) J~Net 2025
+def run_latest_module():
+    files=sorted(os.listdir(MODULE_DIR))
+    mods=[f for f in files if f.startswith("mod_") and f.endswith(".py")]
+    if not mods:
+        print("[no modules found]")
+        return
+    latest=mods[-1]
+    name=latest[:-3]
+    try:
+        mod=importlib.import_module(f"modules.{name}")
+        importlib.reload(mod)
+        print(f"[executing newest module {name}]")
+        mod.ability()
+    except Exception as e:
+        print("[module execution failed]",e)
 
 
 # (c) J~Net 2025
@@ -150,7 +139,6 @@ def run_nmap(target):
     except Exception as e:
         return f"nmap failed: {e}"
 
-
 def parse_open_ports(out):
     ports=[]
     for line in out.splitlines():
@@ -162,57 +150,35 @@ def parse_open_ports(out):
 
 # (c) J~Net 2025
 def analyse_and_next_step(nmap_output):
-    # ensure nmap_output is always a string
     safe_output=str(nmap_output) if nmap_output is not None else ""
-
-    prompt=(
-        "You are a cyber‑security analyst. Based on the NMAP output below, "
-        "provide a prioritised pentest plan and next recommended steps.\n\n"
-        f"{safe_output}"
-    )
-
+    prompt=("You are a cyber‑security analyst. Based on the NMAP output below, provide a prioritised pentest plan and next recommended steps.\n\n"+safe_output)
     try:
         ai=ask_model(prompt)
     except Exception as e:
         ai="AI analysis failed: "+str(e)
-
     print("\n--- AI Security Analysis ---")
     print(ai)
     print("--- End ---\n")
-
-    # request the next CLI command only
     try:
-        next_cmd=ask_model(
-            "Based on the scan analysis, output ONLY the next shell command to run. "
-            "No explanation. Use 'none' if nothing should be executed."
-        )
+        next_cmd=ask_model("Based on the scan analysis, output ONLY the next shell command to run. No explanation. Use 'none' if nothing should be executed.")
     except Exception as e:
         next_cmd="none"
-
     next_cmd=str(next_cmd).strip() if next_cmd else "none"
-
     if next_cmd.lower()=="none" or next_cmd=="":
         print("[No next step required]")
         return
-
-    # SANITISE THE AI COMMAND BEFORE ANYTHING
     active_target=set_active_target("",cfg) or "127.0.0.1"
     next_cmd=sanitize_next_step(next_cmd,active_target)
-
     print(f"\nAI recommends next step: {next_cmd}")
-
     if int(cfg.get("full_auto_next_step",0))==1:
         print("[Auto‑executing]")
         run_and_log(next_cmd)
         return
-
     yn=input("Run this step? (y/N): ").strip().lower()
     if yn=="y":
         run_and_log(next_cmd)
     else:
         print("Skipped.")
-
-
 
 def run_and_log(cmd):
     try:
@@ -224,22 +190,12 @@ def run_and_log(cmd):
         print("Execution failed:",e)
 
 def sanitize_next_step(cmd,active_target):
-    # (c) J~Net 2025
     import re
-
-    # replace ANY ip the AI suggests with the real target
     cmd=re.sub(r"(?:\d{1,3}\.){3}\d{1,3}",active_target,cmd)
-
-    # block commands without the real IP
     if active_target not in cmd:
         cmd=f"{cmd} {active_target}"
-
     return cmd
 
-
-#------------------------------------------------------------
-# SCAN HANDLERS
-#------------------------------------------------------------
 def handle_scan_router():
     router=detect_router_ip()
     if not router:
@@ -250,28 +206,16 @@ def handle_scan_router():
 def handle_scan_target(target):
     print(f"Scanning {target}...")
     out=run_nmap(target)
-
     print("\n--- nmap output start ---")
     print(out)
     print("--- nmap output end ---\n")
-
     ports=parse_open_ports(out)
     if ports:
         print(f"Open ports: {ports}")
-
     analyse_and_next_step(out)
 
-#------------------------------------------------------------
-# NATURAL LANGUAGE → auto modules
-#------------------------------------------------------------
+# MODULE SYSTEM ---------------------------------------------------
 
-#------------------------------------------------------------
-# MODULE SYSTEM WITH ABILITY MATCHING (c) J~Net 2025
-#------------------------------------------------------------
-
-import difflib
-
-# Load all modules with TAGS + ability()
 def load_modules():
     mods={}
     for p in glob.glob(f"{MODULE_DIR}/*.py"):
@@ -280,8 +224,6 @@ def load_modules():
             spec=importlib.util.spec_from_file_location(name,p)
             mod=importlib.util.module_from_spec(spec)
             spec.loader.exec_module(mod)
-
-            # ensure module has TAGS
             if not hasattr(mod,"TAGS"):
                 mod.TAGS=[]
             mods[name]=mod
@@ -289,62 +231,56 @@ def load_modules():
             print(f"[Module Load Error] {name}: {e}")
     return mods
 
-
-# Natural‑Language Ability Selector
+# (c) J~Net 2025
 def try_module(cmd):
-    # build list of all tags across all modules
-    tagged=[]
+    low=cmd.lower()
     for name,mod in modules.items():
-        for t in mod.TAGS:
-            tagged.append((name,t))
-
-    if not tagged:
-        return None  # no modules exist
-
-    # extract best matching tag
-    all_tags=[t for (_,t) in tagged]
-    best=difflib.get_close_matches(cmd,all_tags,n=1,cutoff=0.45)
-
-    if not best:
-        return None  # no ability match found
-
-    best_tag=best[0]
-
-    # find module owning the tag
-    for name,tag in tagged:
-        if tag==best_tag:
-            mod=modules[name]
-            try:
-                return mod.ability()
-            except Exception as e:
-                return f"[Module Error] {name}: {e}"
-
-    return None
+        tags=[t.lower() for t in getattr(mod,"TAGS",[])]
+        for t in tags:
+            if t in low or low in t:
+                try:
+                    print(f"[executing module {name}]")
+                    mod.ability()
+                    return True
+                except Exception as e:
+                    print(f"[Module Error {name}]: {e}")
+                    return True
+    return False
 
 
-# AUTO‑EXTEND WITH TAGS (ability categories)
+# **** NEW: directly run ability after extension ****
+# (c) J~Net 2025
+def run_generated_ability(cmd):
+    ok=try_module(cmd)
+    return ok
+
+
+# AUTO‑EXTEND ------------------------------------------------------
+
+#------------------------------------------------------------
+# AUTO‑EXTEND WITH REAL EXECUTABLE ABILITIES (c) J~Net 2025
+#------------------------------------------------------------
+# (c) J~Net 2025
 def extend(cmd):
     prompt=(
-        "Create a Python ability module for the task:\n"
-        f"'{cmd}'\n\n"
-
-        "RULES:\n"
-        "- Create TAGS=list of natural‑language ability keywords.\n"
-        "- TAGS MUST NOT contain IP addresses, usernames or specific hosts.\n"
-        "- TAGS describe generic ability only.\n"
-        "- Provide a function ability() returning a string summary.\n"
-        "- NO placeholders, NO missing imports.\n"
-        "- FULL Python code only.\n"
+        "Write a Python module implementing the command:\n"
+        f"{cmd}\n\n"
+        "Rules:\n"
+        "- Provide TAGS=list of natural language tags.\n"
+        "- Provide ability() that performs the action.\n"
+        "- Real code only, import everything needed.\n"
+        "- Print results directly.\n"
+        "- No placeholders.\n"
+        "- No shorthand.\n"
+        "- Ability must extract all targets, URLs, text etc from the cmd string.\n"
     )
 
     raw=ask_model(prompt)
     code=raw.replace("```python","").replace("```","")
 
-    # ensure TAGS + ability() exist
     if "def ability" not in code:
-        code="\nTAGS=['generic']\ndef ability():\n    return 'Error: invalid module'\n"
+        code="TAGS=['generic']\ndef ability():\n    print('Auto‑extend failed')\n"
 
-    # filename based on semantic hash, not containing target
     h=abs(hash(cmd))%10**8
     fname=f"mod_{h}.py"
     path=os.path.join(MODULE_DIR,fname)
@@ -352,50 +288,46 @@ def extend(cmd):
     with open(path,"w") as f:
         f.write(code)
 
+    # run it immediately
     print(f"[auto-extended] module created: {path}")
     reload_modules()
+    run_latest_module()
+
+
 
 
 def reload_modules():
     global modules
     modules=load_modules()
 
+# COMMAND DISPATCH ------------------------------------------------
 
-#------------------------------------------------------------
-# COMMAND DISPATCH (UPDATED) (c) J~Net 2025
-#------------------------------------------------------------
+# (c) J~Net 2025
 def handle_command(cmd):
-    if cmd=="":  # recall last
+    if cmd=="":
         cmd=load_last()
         print(f"[using last command] {cmd}")
-
     save_last(cmd)
     low=cmd.lower()
 
-    # scan commands handled normally
+    # special commands
     if low=="scan my router":
-        handle_scan_router()
-        return
-
+        handle_scan_router();return
     if low.startswith("scan "):
         target=cmd.split(" ",1)[1]
-        handle_scan_target(target)
+        handle_scan_target(target);return
+
+    # 1) try to execute existing module
+    if try_module(cmd):
         return
 
-    # FIRST: try existing abilities
-    out=try_module(low)
-    if out:
-        print(out)
-        return
-
-    # OTHERWISE: create new ability module
+    # 2) auto extend if nothing matches
     print("[no matching ability → extending skillset]")
     extend(cmd)
 
 
-#------------------------------------------------------------
-# MAIN LOOP
-#------------------------------------------------------------
+# MAIN LOOP --------------------------------------------------------
+
 def repl():
     while True:
         try:
@@ -408,7 +340,6 @@ def repl():
         except Exception as e:
             print("Error:",e)
 
-# INIT
 ensure_config()
 cfg=load_config()
 ensure_modules_folder()
@@ -416,4 +347,3 @@ modules=load_modules()
 
 if __name__=="__main__":
     repl()
-
