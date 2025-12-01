@@ -2,8 +2,8 @@
 # Brute-Force Test Endpoint (c) J~Net 2025
 
 $logfile=__DIR__.'/brute-log.txt';
-$valid_user='demo';
-$valid_pass='test123';
+$valid_user='administrator';
+$valid_pass='1234';
 $delay_ms=200;
 
 function msleep($ms){
