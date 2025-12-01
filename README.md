@@ -1,31 +1,19 @@
 Local CAI Ollama Pentesting AI
-https://github.com/jamieduk/cai-ollama-python-ai
 
-A natural-language Blue/Red-Team pentesting assistant powered by Python, Ollama-compatible LLMs, and auto-generated modules.
-You can speak to it like a human:
+A natural-language Blue/Red-Team pentesting assistant powered by Python and Ollama-compatible LLM providers.
+You can issue commands like:
 
 scan my router
+
 scan 192.168.1.55 for vulnerabilities
+
 enumerate all services
+
 explain open ports
-run a full recon pack on 192.168.56.103
 
+/model ollama:deepseek-v3.1:671b-cloud
 
-The framework automatically:
-
-detects your router IP
-
-performs Nmap scans
-
-generates new security modules when required
-
-runs vulnerability checks
-
-analyses results using your configured LLM
-
-suggests a safe next step command
-
-Everything runs locally unless you configure a cloud provider.
+The framework auto-detects your router IP, performs port scans, runs vulnerability checks, and sends all results for LLM-level analysis.
 
 Default Configuration
 
@@ -35,51 +23,41 @@ Default model: deepseek-v3.1:671b-cloud
 
 Config file: config.json (generated automatically)
 
-Runtime: Python virtual environment inside the project folder
+You can edit config.json at any time to change defaults such as:
 
-You can edit config.json to change:
+provider URL
 
 model
 
-provider or proxy URL
+ports
 
-nmap ports / arguments
+nmap behaviour
 
-auto-next-step behaviour
-
-logging options
+proxy settings
 
 Setup
 sudo chmod +x *.sh && ./setup.sh
 
 
-This:
+This installs dependencies, creates a venv, installs Python packages, and prepares the environment.
 
-installs dependencies
-
-creates a venv
-
-downloads Python packages
-
-prepares the CAI environment
-
-Start the AI
-
-sudo ./start.sh 
+Start
+./start.sh
 
 
-This launches the interactive CAI CLI:
-
-cai>
+This launches the interactive CAI prompt.
 
 Switching Models
 
-You can switch models naturally:
+Use natural model-switch commands:
 
 /model ollama:deepseek-v3.1:671b-cloud
 
 
-This immediately updates the active model and rewrites config.json.
+ollama run deepseek-v3.1:671b-cloud
+
+
+This updates the active model and writes the change into config.json.
 
 Example Usage
 scan my router
@@ -88,43 +66,8 @@ pentest this host 192.168.1.50
 explain the risks for each open port
 report all vulnerabilities and fixes
 
-Examples that trigger new module generation
-
-Use these to test the module-builder system:
-
-perform a full attack-surface map of 192.168.56.201 including dns, tls, headers, js analysis and subdomain finder
-
-audit my dvwa site at 192.168.56.103 including plugin checks and cve lookup
-
-run a full recon pack on 192.168.56.205 including dns, whois, tls, crawler and tech fingerprinting
-
-
-These force CAI to create modules such as:
-
-DNS lookup
-
-WHOIS
-
-TLS scanner
-
-JS library auditor
-
-CVE lookup
-
-Header analyser
-
-Subdomain finder
-
-Directory discovery
-
-Tech-stack fingerprinting
-
 Notes
 
-Works with local Ollama and cloud LLM providers that expose an Ollama-compatible /generate endpoint.
+Works with local Ollama and cloud providers (including 671B-scale models) as long as they expose an Ollama-compatible /generate endpoint.
 
-Supports models up to 671B via cloud endpoints.
-
-CAI will only analyse systems you explicitly instruct it to.
-
-Only scan systems you own or have written permission to test.
+Ensure you only scan systems you own or have explicit permission to test.
