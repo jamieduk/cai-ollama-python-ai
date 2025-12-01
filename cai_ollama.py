@@ -125,6 +125,7 @@ def run_latest_module():
         print("[module execution failed]",e)
 
 
+
 # (c) J~Net 2025
 def run_nmap(target):
     args=shlex.split(f"nmap {cfg['nmap_args']} {target}")
@@ -147,6 +148,10 @@ def parse_open_ports(out):
             if len(s)>=2 and s[1].lower()=="open":
                 ports.append(s[0])
     return ports
+
+# (c) J~Net 2025
+def normalise_tag(t):
+    return t.lower().strip().replace("-", " ").replace("_", " ")
 
 # (c) J~Net 2025
 def analyse_and_next_step(nmap_output):
@@ -235,7 +240,8 @@ def load_modules():
 def try_module(cmd):
     low=cmd.lower()
     for name,mod in modules.items():
-        tags=[t.lower() for t in getattr(mod,"TAGS",[])]
+        rawtags=getattr(mod,"TAGS",[])
+        tags=[normalise_tag(t) for t in rawtags]
         for t in tags:
             if t in low or low in t:
                 try:
@@ -243,9 +249,10 @@ def try_module(cmd):
                     mod.ability()
                     return True
                 except Exception as e:
-                    print(f"[Module Error {name}]: {e}")
+                    print(f"[Module Error in {name}]: {e}")
                     return True
     return False
+
 
 
 # **** NEW: directly run ability after extension ****
@@ -263,23 +270,22 @@ def run_generated_ability(cmd):
 # (c) J~Net 2025
 def extend(cmd):
     prompt=(
-        "Write a Python module implementing the command:\n"
+        "Write a Python module implementing this command:\n"
         f"{cmd}\n\n"
         "Rules:\n"
         "- Provide TAGS=list of natural language tags.\n"
         "- Provide ability() that performs the action.\n"
-        "- Real code only, import everything needed.\n"
         "- Print results directly.\n"
+        "- No pseudocode.\n"
         "- No placeholders.\n"
-        "- No shorthand.\n"
-        "- Ability must extract all targets, URLs, text etc from the cmd string.\n"
+        "- Valid Python only.\n"
     )
 
     raw=ask_model(prompt)
     code=raw.replace("```python","").replace("```","")
 
     if "def ability" not in code:
-        code="TAGS=['generic']\ndef ability():\n    print('Auto‑extend failed')\n"
+        code="TAGS=['fallback']\ndef ability():\n    print('Extend failed')\n"
 
     h=abs(hash(cmd))%10**8
     fname=f"mod_{h}.py"
@@ -288,17 +294,25 @@ def extend(cmd):
     with open(path,"w") as f:
         f.write(code)
 
-    # run it immediately
     print(f"[auto-extended] module created: {path}")
     reload_modules()
     run_latest_module()
 
 
 
-
+# (c) J~Net 2025
 def reload_modules():
-    global modules
-    modules=load_modules()
+    modules.clear()
+    for f in os.listdir(MODULE_DIR):
+        if f.startswith("mod_") and f.endswith(".py"):
+            name=f[:-3]
+            try:
+                mod=importlib.import_module(f"modules.{name}")
+                importlib.reload(mod)
+                modules[name]=mod
+            except Exception as e:
+                print(f"[Module Load Error] {name}: {e}")
+
 
 # COMMAND DISPATCH ------------------------------------------------
 
@@ -308,22 +322,15 @@ def handle_command(cmd):
         cmd=load_last()
         print(f"[using last command] {cmd}")
     save_last(cmd)
-    low=cmd.lower()
 
-    # special commands
-    if low=="scan my router":
-        handle_scan_router();return
-    if low.startswith("scan "):
-        target=cmd.split(" ",1)[1]
-        handle_scan_target(target);return
-
-    # 1) try to execute existing module
+    # primary ability match
     if try_module(cmd):
         return
 
-    # 2) auto extend if nothing matches
+    # auto-generation fallback
     print("[no matching ability → extending skillset]")
     extend(cmd)
+
 
 
 # MAIN LOOP --------------------------------------------------------
