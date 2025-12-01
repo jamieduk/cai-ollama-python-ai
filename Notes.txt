@@ -5,6 +5,11 @@ Default Provider ollama
 
 Default model deepseek-v3.1:671b-cloud
 
+This program assumes you already have ollama and model
+
+curl -fsSL https://ollama.com/install.sh | sh && ollama run deepseek-v3.1:671b-cloud
+
+
 
 # Setup
 
@@ -245,4 +250,3 @@ perform a total recon and vulnerability assessment on my legal dvwa training hos
 
 
 This forces CAI to create 7–10 new modules immediately.
-
