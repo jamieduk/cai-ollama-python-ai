@@ -70,4 +70,8 @@ Notes
 
 Works with local Ollama and cloud providers (including 671B-scale models) as long as they expose an Ollama-compatible /generate endpoint.
 
+<img width="986" height="670" alt="Screenshot-01" src="https://github.com/user-attachments/assets/35391a83-126d-4adb-86a3-016d1732e2ec" />
+
+
 Ensure you only scan systems you own or have explicit permission to test.
+
