@@ -1,5 +1,5 @@
 <?php
-# Brute-Force Test Endpoint (c) J~Net 2025
+// Brute-Force Test Endpoint (c) J~Net 2025
 
 $logfile=__DIR__.'/brute-log.txt';
 $valid_user='administrator';
@@ -63,3 +63,4 @@ if($attempt!==''){
 
 </body>
 </html>
+
