@@ -24,7 +24,7 @@ def ensure_config():
             json.dump(DEFAULT_CONFIG,f,indent=4)
         print("Created default config.json")
 
-# (c) J~Net 2025
+
 def load_config():
     with open(CONFIG_FILE,"r") as f:
         data=json.load(f)
@@ -44,7 +44,7 @@ def load_last():
         return ""
     return open(LAST_CMD_FILE).read().strip()
 
-# (c) J~Net 2025
+
 def ask_model(prompt):
     try:
         model=cfg.get("default_model",DEFAULT_CONFIG["default_model"])
@@ -64,7 +64,7 @@ def ensure_modules_folder():
         with open(os.path.join(MODULE_DIR,"example_module.py"),"w") as f:
             f.write("TAGS=['example']\n\ndef ability():\n    return 'example ability loaded'\n")
 
-# (c) J~Net 2025
+
 def ollama_generate(prompt,model,url,timeout=60):
     payload={"model":model,"prompt":prompt,"stream":False}
     try:
@@ -107,7 +107,7 @@ def set_active_target(text,config):
         return config["active_target"]
     return None
 
-# (c) J~Net 2025
+
 def run_latest_module():
     files=sorted(os.listdir(MODULE_DIR))
     mods=[f for f in files if f.startswith("mod_") and f.endswith(".py")]
@@ -126,7 +126,7 @@ def run_latest_module():
 
 
 
-# (c) J~Net 2025
+
 def run_nmap(target):
     args=shlex.split(f"nmap {cfg['nmap_args']} {target}")
     if cfg["vuln_script"]:
@@ -149,11 +149,11 @@ def parse_open_ports(out):
                 ports.append(s[0])
     return ports
 
-# (c) J~Net 2025
+
 def normalise_tag(t):
     return t.lower().strip().replace("-", " ").replace("_", " ")
 
-# (c) J~Net 2025
+
 def analyse_and_next_step(nmap_output):
     safe_output=str(nmap_output) if nmap_output is not None else ""
     prompt=("You are a cyber‑security analyst. Based on the NMAP output below, provide a prioritised pentest plan and next recommended steps.\n\n"+safe_output)
@@ -236,7 +236,7 @@ def load_modules():
             print(f"[Module Load Error] {name}: {e}")
     return mods
 
-# (c) J~Net 2025
+
 def try_module(cmd):
     low=cmd.lower()
     for name,mod in modules.items():
@@ -256,7 +256,7 @@ def try_module(cmd):
 
 
 # **** NEW: directly run ability after extension ****
-# (c) J~Net 2025
+
 def run_generated_ability(cmd):
     ok=try_module(cmd)
     return ok
@@ -267,7 +267,7 @@ def run_generated_ability(cmd):
 #------------------------------------------------------------
 # AUTO‑EXTEND WITH REAL EXECUTABLE ABILITIES (c) J~Net 2025
 #------------------------------------------------------------
-# (c) J~Net 2025
+
 def extend(cmd):
     prompt=(
         "Write a Python module implementing this command:\n"
@@ -300,7 +300,7 @@ def extend(cmd):
 
 
 
-# (c) J~Net 2025
+
 def reload_modules():
     modules.clear()
     for f in os.listdir(MODULE_DIR):
@@ -316,7 +316,7 @@ def reload_modules():
 
 # COMMAND DISPATCH ------------------------------------------------
 
-# (c) J~Net 2025
+
 def handle_command(cmd):
     if cmd=="":
         cmd=load_last()
@@ -354,3 +354,4 @@ modules=load_modules()
 
 if __name__=="__main__":
     repl()
+
