@@ -1,1 +1,1 @@
-perform a total recon and vulnerability assessment on my legal training host at 192.168.43.218 including dns, whois, tls, headers, js library vuln check, directory brute force, subdomain finder, cve lookup and tech stack fingerprinting
+perform a total recon and vulnerability assessment on my legal training host at localhost including dns, whois, tls, headers, js library vuln check, directory brute force, subdomain finder, cve lookup and tech stack fingerprinting
