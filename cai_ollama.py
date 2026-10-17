@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # CAI Blue/Red Team Pentest Framework (c) J~Net 2025
 
-import os,sys,json,shlex,subprocess,socket,requests,importlib,glob,difflib
+import os,sys,json,shlex,subprocess,socket,requests,importlib,glob,difflib,uuid
 
 CONFIG_FILE="config.json"
 MODULE_DIR="modules"
@@ -9,8 +9,10 @@ LAST_CMD_FILE="last.txt"
 LOG_FILE="scan.log"
 
 DEFAULT_CONFIG={
+    "provider":"auto",
     "provider_url":"http://127.0.0.1:11434",
     "default_model":"deepseek-v3.1:671b-cloud",
+    "api_key_env":"OPENCODE_API_KEY",
     "full_auto_next_step":0,
     "nmap_args":"-sS -Pn -T4",
     "vuln_script":True,
@@ -45,18 +47,75 @@ def load_last():
     return open(LAST_CMD_FILE).read().strip()
 
 
-def ask_model(prompt):
+OPENCODE_URL_MARKERS=("opencode.ai","zen/go")
+OPENCODE_SESSION=str(uuid.uuid4())
+
+
+def is_opencode_go(url=None):
+    provider=str(cfg.get("provider","auto")).strip().lower()
+    if provider in ("opencode","opencode-go","opencode_go","opencode.ai"):
+        return True
+    if provider in ("ollama","local","ollama-cloud"):
+        return False
+    u=str(url if url is not None else cfg.get("provider_url","")).lower()
+    return any(marker in u for marker in OPENCODE_URL_MARKERS)
+
+
+def opencode_endpoint(url):
+    base=str(url).strip().rstrip("/")
+    if base.endswith("/chat/completions"):
+        return base
+    if "opencode.ai" in base.lower() and not base.lower().endswith("/v1"):
+        base+="/v1"
+    return base+"/chat/completions"
+
+
+def opencode_api_key():
+    env_name=str(cfg.get("api_key_env","OPENCODE_API_KEY")).strip() or "OPENCODE_API_KEY"
+    return cfg.get("api_key") or os.environ.get(env_name,"")
+
+
+def opencode_headers():
+    headers={
+        "Content-Type":"application/json",
+        "x-opencode-session":str(cfg.get("opencode_session") or OPENCODE_SESSION)
+    }
+    key=opencode_api_key()
+    if key:
+        headers["Authorization"]="Bearer "+key
+    return headers
+
+
+def generate(prompt,model=None,url=None,timeout=60):
+    model=model or cfg.get("default_model",DEFAULT_CONFIG["default_model"])
+    url=url or cfg.get("provider_url",DEFAULT_CONFIG["provider_url"])
+    opencode=is_opencode_go(url)
+    provider="opencode-go" if opencode else "ollama"
     try:
-        model=cfg.get("default_model",DEFAULT_CONFIG["default_model"])
-        url=cfg.get("provider_url",DEFAULT_CONFIG["provider_url"])
+        if opencode:
+            if not opencode_api_key():
+                return "opencode-go error: API key not set (set OPENCODE_API_KEY or api_key in config.json)"
+            payload={"model":model,"messages":[{"role":"user","content":prompt}],"stream":False}
+            r=requests.post(opencode_endpoint(url),json=payload,headers=opencode_headers(),timeout=timeout)
+            if r.status_code!=200:
+                return "LLM error: "+r.text
+            j=r.json()
+            try:
+                return (j["choices"][0]["message"]["content"] or "").strip()
+            except (KeyError,IndexError,TypeError,AttributeError):
+                return "LLM error: unexpected opencode-go response: "+str(j)[:500]
         payload={"model":model,"prompt":prompt,"stream":False}
-        r=requests.post(f"{url}/api/generate",json=payload,timeout=60)
+        r=requests.post(f"{str(url).rstrip('/')}/api/generate",json=payload,timeout=timeout)
         if r.status_code!=200:
             return "LLM error: "+r.text
         j=r.json()
         return j.get("response","").strip()
     except Exception as e:
-        return "Ollama request failed: "+str(e)
+        return f"{provider} request failed: "+str(e)
+
+
+def ask_model(prompt):
+    return generate(prompt)
 
 def ensure_modules_folder():
     if not os.path.exists(MODULE_DIR):
@@ -66,14 +125,7 @@ def ensure_modules_folder():
 
 
 def ollama_generate(prompt,model,url,timeout=60):
-    payload={"model":model,"prompt":prompt,"stream":False}
-    try:
-        r=requests.post(f"{url}/api/generate",json=payload,timeout=timeout)
-        if r.status_code!=200:return "LLM error: "+r.text
-        j=r.json()
-        return j.get("response","").strip()
-    except Exception as e:
-        return "Ollama request failed: "+str(e)
+    return generate(prompt,model,url,timeout)
 
 def detect_router_ip():
     try:
