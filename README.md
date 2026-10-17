@@ -32,7 +32,7 @@ Default Configuration
 
 Default provider: ollama
 
-Default model: deepseek-v3.1:671b-cloud
+Default model: deepseek-v4.1-flash:cloud
 
 Config file: config.json (generated automatically)
 
@@ -74,11 +74,11 @@ cai>
 
 Switching Models
 
-ollama run deepseek-v3.1:671b-cloud
+ollama run deepseek-v4.1-flash:cloud
 
 You can switch models naturally:
 
-/model ollama:deepseek-v3.1:671b-cloud
+/model ollama:deepseek-v4.1-flash:cloud
 
 This immediately updates the active model and rewrites config.json.
 
