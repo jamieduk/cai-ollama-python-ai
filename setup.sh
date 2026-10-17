@@ -14,5 +14,8 @@ pip install -r requirements.txt
 pip install --upgrade pip >/dev/null 2>&1
 pip install requests >/dev/null 2>&1
 # python3 ./cai_ollama.py
+curl -fsSL https://ollama.com/install.sh | sh && ollama run deepseek-v4.1-flash:cloud
+
 echo "To run type ./start.sh"
+
 
