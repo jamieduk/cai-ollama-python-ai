@@ -1,5 +1,5 @@
 #!/bin/bash
-# CAI Launcher (c) J~Net 2025
+# CAI Launcher © J~Net 2025
 #
 
 mkdir -p logs modules
@@ -21,13 +21,14 @@ cat <<EOF > config.json
 {
 "model":"deepseek-v3.1:671b-cloud",
 "full_auto_next_step":0,
-"default_scan_ip":"192.168.1.1",
+"default_scan_ip":"192.168.43.1",
 "mode":"1"
 }
 EOF
 echo "Created default config.json"
 fi
 
-echo "CAI Ollama By J~Net (c) 2025"
+echo "CAI Ollama By J~Net © 2025"
 echo ""
 python3 ./cai_ollama.py
+
