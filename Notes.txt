@@ -23,15 +23,22 @@ sudo ./start.sh
 scan my local web server at 192.168.43.218 and check for weaknesses
 
 
-ollama run deepseek-v3.1:671b-cloud
+ollama run deepseek-v4.1-flash:cloud
 
 # Switching models
 
-/model ollama:deepseek-v3.1:671b-cloud
+/model ollama:deepseek-v4.1-flash:cloud
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Testing it on a vulnarable target with docker
+
+docker run --rm -it -p 8081:80 vulnerables/web-dvwa
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 Example natural user input task you can type
 scan my local web server at 192.168.43.218 and check for security weaknesses. include web, ssh and any other open services. stay only on this ip.
