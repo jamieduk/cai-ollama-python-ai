@@ -10,7 +10,7 @@ enumerate all services
 explain open ports
 run a full recon pack on 192.168.56.103
 
-now also works with opencode-go (See the -ver folders for example config file)!
+Now also works with opencode-go (See the -ver folders for example config file)!
 
 The framework automatically:
 
