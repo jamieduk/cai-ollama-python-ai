@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# CAI Blue/Red Team Pentest Framework (c) J~Net 2025
+# CAI Blue/Red Team Pentest Framework © J~Net 2025
 
 import os,sys,json,shlex,subprocess,socket,requests,importlib,glob,difflib,uuid
 
@@ -11,7 +11,7 @@ LOG_FILE="scan.log"
 DEFAULT_CONFIG={
     "provider":"auto",
     "provider_url":"http://127.0.0.1:11434",
-    "default_model":"deepseek-v3.1:671b-cloud",
+    "default_model":"deepseek-v4.1-flash:cloud",
     "api_key_env":"OPENCODE_API_KEY",
     "full_auto_next_step":0,
     "nmap_args":"-sS -Pn -T4",
@@ -317,7 +317,7 @@ def run_generated_ability(cmd):
 # AUTO‑EXTEND ------------------------------------------------------
 
 #------------------------------------------------------------
-# AUTO‑EXTEND WITH REAL EXECUTABLE ABILITIES (c) J~Net 2025
+# AUTO‑EXTEND WITH REAL EXECUTABLE ABILITIES © J~Net 2025
 #------------------------------------------------------------
 
 def extend(cmd):
