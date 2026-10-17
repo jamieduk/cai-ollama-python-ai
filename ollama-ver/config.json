@@ -1,0 +1,11 @@
+{
+    "model": "deepseek-v3.1:671b-cloud",
+    "full_auto_next_step": 0,
+    "default_scan_ip": "192.168.43.1",
+    "mode": "1",
+    "provider_url": "http://127.0.0.1:11434",
+    "default_model": "deepseek-v3.1:671b-cloud",
+    "nmap_args": "-sS -Pn -T4",
+    "vuln_script": true,
+    "scan_timeout": 300
+}
