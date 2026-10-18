@@ -1,6 +1,7 @@
 #!/bin/bash
 # CAI Launcher © J~Net 2025
 #
+echo -e "\e[92mCIA"
 
 mkdir -p logs modules
 
