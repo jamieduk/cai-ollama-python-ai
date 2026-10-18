@@ -19,7 +19,7 @@ source venv/bin/activate
 if [ ! -f config.json ]; then
 cat <<EOF > config.json
 {
-"model":"deepseek-v3.1:671b-cloud",
+"model":"deepseek-v4-flash",
 "full_auto_next_step":0,
 "default_scan_ip":"192.168.43.1",
 "mode":"1"
