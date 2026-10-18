@@ -21,7 +21,7 @@ cat <<EOF > config.json
 {
 "model":"deepseek-v4-flash",
 "full_auto_next_step":0,
-"default_scan_ip":"192.168.43.1",
+"default_scan_ip":"192.168.1.1",
 "mode":"1"
 }
 EOF
