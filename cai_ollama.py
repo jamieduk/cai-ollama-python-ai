@@ -1741,7 +1741,7 @@ def parse_mission(text):
     }
 
 
-def read_mission_file(path):
+def read_mission_file(path, show=False):
     path = os.path.expanduser(path.strip().strip("'\""))
     try:
         with open(path, "r", errors="replace") as f:
@@ -1752,9 +1752,16 @@ def read_mission_file(path):
     if len(text) > 400000:
         print("[read] file is large; truncating to 400000 characters")
         text = text[:400000]
-    print(f"\n--- {path} ---")
-    print(text)
-    print(f"--- end {path} ---\n")
+    if show:
+        print(f"\n--- {path} ---")
+        print(text)
+        print(f"--- end {path} ---\n")
+    else:
+        preview = " ".join(text.split())[:400]
+        print(f"\n[read] loaded {path} ({len(text)} chars)")
+        if preview:
+            print(f"[read] {preview}{'...' if len(text) > 400 else ''}")
+        print("[read] use 'read <file> --show' to print the whole file")
     mission = parse_mission(text)
     mission["path"] = path
     mission["text"] = text
@@ -1767,17 +1774,56 @@ def read_mission_file(path):
     return mission
 
 
+AI_COMMAND_TOOLS = ("nmap", "nikto", "curl", "gobuster", "sqlmap", "whatweb", "whois", "dig", "openssl")
+
+
+def ai_execute_mission(mission, assume_yes=False):
+    text = mission.get("text", "")
+    prompt = (
+        "You are CAI, an authorised penetration-testing assistant. The text below is a mission "
+        "brief. Read it as your instructions, then carry them out as far as you can and produce a "
+        "concrete, ordered plan. For each active step give the exact command, using only these "
+        "tools: " + ", ".join(AI_COMMAND_TOOLS) + ". Do not claim anything has been executed.\n\n"
+        "---BEGIN MISSION BRIEF---\n" + text[:16000] + "\n---END MISSION BRIEF---"
+    )
+    answer = ask_model(prompt)
+    if not ai_ok(answer):
+        print("[mission] no target found in the file and the AI is unavailable.")
+        print("[mission] add a target URL/IP to the file, or pass one: read <file> http://target")
+        return
+    print("\n--- AI mission plan ---")
+    print(answer)
+    print("--- End ---\n")
+    commands = []
+    for line in answer.splitlines():
+        candidate = line.strip().strip("`").lstrip("$ ").strip()
+        match = re.match(r"^(" + "|".join(AI_COMMAND_TOOLS) + r")\b", candidate)
+        if match and candidate not in commands:
+            commands.append(candidate)
+    if not commands:
+        return
+    print("[mission] AI proposed the following commands:")
+    for command in commands:
+        print("  " + command)
+    for command in commands:
+        if assume_yes:
+            run_and_log(command)
+            continue
+        try:
+            answer_in = input(f"Run '{command}'? (y/N): ").strip().lower()
+        except EOFError:
+            answer_in = "n"
+        if answer_in in ("y", "yes"):
+            run_and_log(command)
+
+
 def execute_mission(mission, assume_yes=False):
     if not mission:
         print("[mission] no mission loaded")
         return
     target = mission.get("target")
     if not target:
-        analysis = ask_model(
-            "Review these pentest instructions and produce an actionable plan. "
-            "Do not claim tests were run.\n\n" + mission.get("text", "")[:12000]
-        )
-        print(analysis if ai_ok(analysis) else "[mission] no target found in instructions")
+        ai_execute_mission(mission, assume_yes)
         return
     if not assumption(assume_yes):
         return
@@ -2004,7 +2050,7 @@ def handle_command(cmd):
         options = [p for p in parts[1:] if p.startswith("--")]
         files = [p for p in parts[1:] if not p.startswith("--")]
         path = files[0] if files else ""
-        mission = read_mission_file(path)
+        mission = read_mission_file(path, show="--show" in options)
         if mission:
             creds = extract_credentials(cmd)
             if creds.get("username"):
@@ -2014,8 +2060,11 @@ def handle_command(cmd):
             security = extract_security_level(cmd)
             if security:
                 mission["security"] = security
+            url = extract_url(cmd)
+            if url and not mission.get("target"):
+                mission["target"] = url
             LAST_MISSION = mission
-            if "--run" in options or "--yes" in options:
+            if "--no-run" not in options and "--load" not in options:
                 execute_mission(mission, assume_yes="--yes" in options)
         return
     if low in ("mission", "/mission"):
@@ -2235,8 +2284,8 @@ def run_cli(args):
                 mission["password"] = args.password
             if args.security:
                 mission["security"] = args.security
-        if mission and args.yes:
-            execute_mission(mission, assume_yes=True)
+        if mission and not args.no_run:
+            execute_mission(mission, assume_yes=args.yes)
         return
     if args.command:
         for command in args.command:
@@ -2273,6 +2322,8 @@ def main():
     parser.add_argument("--no-active", action="store_true", help="disable active tests")
     parser.add_argument("--no-ai", action="store_true", help="disable model calls")
     parser.add_argument("--yes", action="store_true", help="automatically execute loaded missions")
+    parser.add_argument("--no-run", action="store_true", help="load a mission file without executing it")
+    parser.add_argument("--show", action="store_true", help="print the full mission file")
     args = parser.parse_args()
     run_cli(args)
 
